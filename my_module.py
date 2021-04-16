@@ -14,3 +14,27 @@ def clean_text(file_path: str) -> list:
                 continue
             sentence_lists.append(sub_sent.strip() + ".")
     return sentence_lists
+
+
+def extract_path_to_token(doc, token) -> list:
+    head_of = dict()
+    for tok in doc:
+        head_of[tok] = tok.head
+
+    root = find_root(doc)
+    head_of[root] = None
+
+    temp = token
+    path = list()
+
+    while temp is not None:
+        path.append(temp)
+        temp = head_of[temp]
+    path.reverse()
+    return path
+
+
+def find_root(doc) -> str:
+    for token in doc:
+        if token.dep_ == "ROOT":
+            return token
