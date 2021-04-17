@@ -16,10 +16,15 @@ def clean_text(file_path: str) -> list:
     return sentence_lists
 
 
-def extract_paths_to_token(sentence: list) -> dict:
-
+def get_doc(sentence: str):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(sentence)
+    return doc
+
+
+def extract_paths_to_token(sentence: str) -> dict:
+
+    doc = get_doc(sentence)
 
     head_of = dict()
     for token in doc:
@@ -43,7 +48,19 @@ def extract_paths_to_token(sentence: list) -> dict:
     return paths
 
 
-def find_root(doc) -> str:
+def find_root(doc):
     for token in doc:
         if token.dep_ == "ROOT":
             return token
+
+
+def extract_subtrees(sentence: str) -> dict:
+
+    doc = get_doc(sentence)
+    trees = dict()
+
+    for token in doc:
+        trees[token] = token.subtree
+
+    return trees
+

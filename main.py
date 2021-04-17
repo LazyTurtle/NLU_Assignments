@@ -1,5 +1,5 @@
 import my_module
-import spacy
+# import spacy
 # from spacy import displacy
 
 if __name__ == '__main__':
@@ -10,3 +10,8 @@ if __name__ == '__main__':
 
     for token, path in paths.items():
         print("The path for '{}' is: {}".format(token, path))
+
+    trees = my_module.extract_subtrees(text[3])
+
+    for token, tree in trees.items():
+        print("The subtree of {} is: {}".format(token, list(tree)))
