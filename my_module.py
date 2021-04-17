@@ -1,5 +1,5 @@
 import spacy
-
+import random
 
 # return a list of lists containing the tokens.
 def clean_text(file_path: str) -> list:
@@ -23,7 +23,6 @@ def get_doc(sentence: str):
 
 
 def extract_paths_to_token(sentence: str) -> dict:
-
     doc = get_doc(sentence)
 
     head_of = dict()
@@ -55,7 +54,6 @@ def find_root(doc):
 
 
 def extract_subtrees(sentence: str) -> dict:
-
     doc = get_doc(sentence)
     trees = dict()
 
@@ -64,3 +62,35 @@ def extract_subtrees(sentence: str) -> dict:
 
     return trees
 
+
+def token_to_subtree_check(token_list: list, sentence: str) -> bool:
+    trees = extract_subtrees(sentence)
+    for token, tree in trees.items():
+        list_of_tree = get_list_from_tree(tree)
+        if [t.text for t in token_list] == [t.text for t in list_of_tree]:
+            return True
+
+    return False
+
+
+def get_list_from_tree(tree):
+    token_list = list()
+    for token in tree:
+        token_list.append(token)
+    return token_list
+
+
+def get_token_list(sentence: str, start=-1, end=-1) -> list:
+    doc = get_doc(sentence)
+    length = 0
+    if -1 < start < end:
+        length = end - start
+    else:
+        # for testing purposes
+        length = random.randint(1, len(doc))
+        start = random.randint(0, len(doc) - length)
+
+    token_list = list()
+    for i in range(start, start + length):
+        token_list.append(doc[i])
+    return token_list
