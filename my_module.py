@@ -16,22 +16,31 @@ def clean_text(file_path: str) -> list:
     return sentence_lists
 
 
-def extract_path_to_token(doc, token) -> list:
+def extract_paths_to_token(sentence: list) -> dict:
+
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(sentence)
+
     head_of = dict()
-    for tok in doc:
-        head_of[tok] = tok.head
+    for token in doc:
+        head_of[token] = token.head
 
     root = find_root(doc)
     head_of[root] = None
+    paths = dict()
 
-    temp = token
-    path = list()
+    for token in doc:
+        temp = token
+        path = list()
 
-    while temp is not None:
-        path.append(temp)
-        temp = head_of[temp]
-    path.reverse()
-    return path
+        while temp is not None:
+            path.append(temp)
+            temp = head_of[temp]
+
+        path.reverse()
+        paths[token] = path
+
+    return paths
 
 
 def find_root(doc) -> str:
