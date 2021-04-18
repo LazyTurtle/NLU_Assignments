@@ -96,7 +96,6 @@ def get_list_from_tree(tree):
 
 def get_token_list(sentence: str, start=-1, end=-1) -> list:
     doc = get_doc(sentence)
-    length = 0
     if -1 < start < end:
         length = end - start
     else:

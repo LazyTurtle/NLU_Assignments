@@ -1,8 +1,5 @@
 import my_module
 
-# import spacy
-# from spacy import displacy
-
 if __name__ == '__main__':
     print("---start---")
     text = my_module.clean_text("data/text.txt")
