@@ -2,8 +2,14 @@ import spacy
 import random
 
 
+def check_str(string: str):
+    assert string.strip() != "", "string must not be an empty string"
+
+
 # return a list of lists containing the tokens.
 def clean_text(file_path: str) -> list:
+    check_str(file_path)
+
     text = open(file_path)
     sentence_lists = list()
     for line in text:
@@ -18,8 +24,10 @@ def clean_text(file_path: str) -> list:
 
 
 def get_doc(sentence: str):
+    check_str(sentence)
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(sentence)
+    doc.has_annotation("DEP")
     return doc
 
 
@@ -49,6 +57,7 @@ def extract_paths_to_token(sentence: str) -> dict:
 
 
 def find_root(doc):
+    assert doc is not None, "doc must not be None"
     for token in doc:
         if token.dep_ == "ROOT":
             return token
@@ -62,16 +71,15 @@ def extract_subtrees(sentence: str, include_token=False) -> dict:
         if include_token:
             trees[token] = token.subtree
         else:
-            set_tree = set(token.subtree)
-            set_token = set()
-            set_token.add(token)
-            trees[token] = set_tree - set_token
+            temp = get_list_from_tree(token.subtree)
+            temp.remove(token)
+            trees[token] = temp
 
     return trees
 
 
 def token_to_subtree_check(token_list: list, sentence: str) -> bool:
-    trees = extract_subtrees(sentence, True)
+    trees = extract_subtrees(sentence)
     for token, tree in trees.items():
         list_of_tree = get_list_from_tree(tree)
         if [t.text for t in token_list] == [t.text for t in list_of_tree]:
@@ -120,5 +128,5 @@ def extract_head_of_span(input_span, sentence):
     index = contains_list([token.text for token in doc], [token.text for token in input_span])
     if index:
         span = doc[index:len(input_span) + index]
-        return span
+        return span.root
     return None

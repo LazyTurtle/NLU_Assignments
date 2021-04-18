@@ -7,7 +7,7 @@ if __name__ == '__main__':
     print("---start---")
     text = my_module.clean_text("data/text.txt")
 
-    test_sentence = text[3]
+    test_sentence = text[7]
 
     paths = my_module.extract_paths_to_token(test_sentence)
 
@@ -19,13 +19,14 @@ if __name__ == '__main__':
     for token, tree in trees.items():
         print("The subtree of '{}' is: {}".format(token, list(tree)))
 
-    found_sub_tree = False
-    while not found_sub_tree:
+    random_attempts = 5
+    for i in range(random_attempts):
         token_list = my_module.get_token_list(test_sentence)
         if my_module.token_to_subtree_check(token_list, test_sentence):
             print("The list {} is a subtree".format(token_list))
-            found_sub_tree = True
         else:
             print("The list {} is NOT a subtree".format(token_list))
 
-    my_module.extract_head_of_span(my_module.get_token_list(test_sentence), test_sentence)
+    span = my_module.get_token_list(test_sentence)
+    root_of_head = my_module.extract_head_of_span(span, test_sentence)
+    print("The root of the span '{}' is '{}'".format(span, root_of_head))
