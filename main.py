@@ -16,7 +16,7 @@ if __name__ == '__main__':
     trees = my_module.extract_subtrees(test_sentence)
 
     for token, tree in trees.items():
-        print("The subtree of {} is: {}".format(token, list(tree)))
+        print("The subtree of '{}' is: {}".format(token, list(tree)))
 
     found_sub_tree = False
     while not found_sub_tree:
