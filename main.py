@@ -7,7 +7,7 @@ if __name__ == '__main__':
     print("---start---")
     text = my_module.clean_text("data/text.txt")
 
-    test_sentence = text[7]
+    test_sentence = text[4]
 
     paths = my_module.extract_paths_to_token(test_sentence)
 
@@ -30,3 +30,6 @@ if __name__ == '__main__':
     span = my_module.get_token_list(test_sentence)
     root_of_head = my_module.extract_head_of_span(span, test_sentence)
     print("The root of the span '{}' is '{}'".format(span, root_of_head))
+
+    dependency_info = my_module.extract_nsubj_dobj_iobj(test_sentence)
+    print(dependency_info)

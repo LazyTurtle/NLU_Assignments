@@ -27,7 +27,6 @@ def get_doc(sentence: str):
     check_str(sentence)
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(sentence)
-    doc.has_annotation("DEP")
     return doc
 
 
@@ -130,3 +129,21 @@ def extract_head_of_span(input_span, sentence):
         span = doc[index:len(input_span) + index]
         return span.root
     return None
+
+
+def extract_nsubj_dobj_iobj(sentence: str) -> dict:
+    return extract_info(sentence, "nsubj", "dobj", "iobj")
+
+
+def extract_info(sentence, *info) -> dict:
+    doc = get_doc(sentence)
+    assert len(list(info)) > 0, "There must be dependency information to extract"
+
+    dependency_spans = dict()
+    for dependency in list(info):
+        dependency_spans[dependency] = list()
+
+    for token in doc:
+        if token.dep_ in list(info):
+            dependency_spans[token.dep_].append(get_list_from_tree(token.subtree))
+    return dependency_spans
