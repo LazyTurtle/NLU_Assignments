@@ -93,7 +93,7 @@ def get_token_list(sentence: str, start=-1, end=-1) -> list:
     if -1 < start < end:
         length = end - start
     else:
-        # for testing purposes
+        # for testing purposes we may want a random contiguous sequence of tokens
         length = random.randint(1, len(doc))
         start = random.randint(0, len(doc) - length)
 
@@ -101,3 +101,24 @@ def get_token_list(sentence: str, start=-1, end=-1) -> list:
     for i in range(start, start + length):
         token_list.append(doc[i])
     return token_list
+
+
+def contains_list(list_container: list, list_contained: list):
+    print(list_container, list_contained)
+    len_container = len(list_container)
+    len_contained = len(list_contained)
+    assert len_container >= len_contained, "The list container must be equal or larger than the one contained"
+    for i in range(len_container - len_contained + 1):
+        j = len_contained + i
+        if list_container[i:j] == list_contained:
+            return i
+    return None
+
+
+def extract_head_of_span(input_span, sentence):
+    doc = get_doc(sentence)
+    index = contains_list([token.text for token in doc], [token.text for token in input_span])
+    if index:
+        span = doc[index:len(input_span) + index]
+        return span
+    return None

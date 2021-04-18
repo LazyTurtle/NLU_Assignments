@@ -1,4 +1,5 @@
 import my_module
+
 # import spacy
 # from spacy import displacy
 
@@ -26,3 +27,5 @@ if __name__ == '__main__':
             found_sub_tree = True
         else:
             print("The list {} is NOT a subtree".format(token_list))
+
+    my_module.extract_head_of_span(my_module.get_token_list(test_sentence), test_sentence)
