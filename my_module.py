@@ -30,7 +30,7 @@ def get_doc(sentence: str):
     return doc
 
 
-def extract_paths_to_token(sentence: str) -> dict:
+def extract_paths_to_tokens(sentence: str) -> dict:
     doc = get_doc(sentence)
 
     head_of = dict()

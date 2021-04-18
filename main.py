@@ -6,7 +6,7 @@ if __name__ == '__main__':
 
     test_sentence = text[4]
 
-    paths = my_module.extract_paths_to_token(test_sentence)
+    paths = my_module.extract_paths_to_tokens(test_sentence)
 
     for token, path in paths.items():
         print("The path for '{}' is: {}".format(token, path))
