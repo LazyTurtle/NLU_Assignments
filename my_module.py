@@ -94,6 +94,7 @@ def get_list_from_tree(tree):
     return token_list
 
 
+# only used for testing purposes
 def get_token_list(sentence: str, start=-1, end=-1) -> list:
     doc = get_doc(sentence)
     if -1 < start < end:
