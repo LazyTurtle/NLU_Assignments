@@ -11,7 +11,7 @@ This Python project requires the following:
 
 - [spaCy](https://spacy.io/), which is an open-source software library for Natural Language Processing
 - [random](https://docs.python.org/3/library/random.html), a python module that implements pseudo-random number generators
-- [my_module](my_module.py), which is the main python file that implements the code.
+- [assignment_module_1](assignment_module_1.py), which is the main python file that implements the code.
 
 ### Installation
 
@@ -19,4 +19,8 @@ This Python project requires the following:
 
 **random**: It is a module present within the Python Standard Library and, therefore, should be present in all standard installation of Python.
 
-**my_module**: It is necessary to download this project and extract it inside your project folder.
+**assignment_module_1**: It is necessary to download this project and extract it inside your project folder.
+
+## Assignment 2
+
+On development

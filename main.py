@@ -1,32 +1,42 @@
-import my_module
+import assignment_module_1
+import assignment_module_2
 
-if __name__ == '__main__':
-    print("---start---")
-    text = my_module.clean_text("data/text.txt")
+
+def first_assignment():
+    print("---start first assignment---")
+    text = assignment_module_1.clean_text("data/text.txt")
 
     test_sentence = text[4]
 
-    paths = my_module.extract_paths_to_tokens(test_sentence)
+    paths = assignment_module_1.extract_paths_to_tokens(test_sentence)
 
     for token, path in paths.items():
         print("The path for '{}' is: {}".format(token, path))
 
-    trees = my_module.extract_subtrees(test_sentence)
+    trees = assignment_module_1.extract_subtrees(test_sentence)
 
     for token, tree in trees.items():
         print("The subtree of '{}' is: {}".format(token, list(tree)))
 
     random_attempts = 5
     for i in range(random_attempts):
-        token_list = my_module.get_token_list(test_sentence)
-        if my_module.token_to_subtree_check(token_list, test_sentence):
+        token_list = assignment_module_1.get_token_list(test_sentence)
+        if assignment_module_1.token_to_subtree_check(token_list, test_sentence):
             print("The list {} is a subtree".format(token_list))
         else:
             print("The list {} is NOT a subtree".format(token_list))
 
-    span = my_module.get_token_list(test_sentence)
-    root_of_head = my_module.extract_head_of_span(span, test_sentence)
+    span = assignment_module_1.get_token_list(test_sentence)
+    root_of_head = assignment_module_1.extract_head_of_span(span, test_sentence)
     print("The root of the span '{}' is '{}'".format(span, root_of_head))
 
-    dependency_info = my_module.extract_nsubj_dobj_iobj(test_sentence)
+    dependency_info = assignment_module_1.extract_nsubj_dobj_iobj(test_sentence)
     print(dependency_info)
+
+
+def second_assignment():
+    print("---start second assignment---")
+
+
+if __name__ == '__main__':
+    first_assignment()
