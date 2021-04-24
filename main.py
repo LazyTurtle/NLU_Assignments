@@ -39,4 +39,5 @@ def second_assignment():
 
 
 if __name__ == '__main__':
-    first_assignment()
+    #first_assignment()
+    assignment_module_2.evaluate_spacy_ner("data/conll2003/test.txt")
