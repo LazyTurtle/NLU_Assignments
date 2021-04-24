@@ -40,4 +40,13 @@ def second_assignment():
 
 if __name__ == '__main__':
     #first_assignment()
-    assignment_module_2.evaluate_spacy_ner("data/conll2003/test.txt")
+    accuracies = assignment_module_2.evaluate_spacy_ner("data/conll2003/test.txt")
+    accurate_predictions = 0
+    total_predictions = 0
+    print(accuracies)
+    for key, (fraction, acc, tot) in accuracies.items():
+        if fraction is not None:
+            accurate_predictions += acc
+            total_predictions += tot
+
+    print(accurate_predictions / total_predictions, accurate_predictions, total_predictions)
