@@ -3,14 +3,6 @@ from spacy.tokens import Doc
 import conll
 
 
-class ConfusionMatrix:
-    def __init__(self):
-        true_positive = int()
-        true_negative = int()
-        false_positive = int()
-        false_negative = int()
-
-
 class WhitespaceTokenizer:
     def __init__(self, vocab):
         self.vocab = vocab
@@ -18,6 +10,57 @@ class WhitespaceTokenizer:
     def __call__(self, text):
         words = text.split(" ")
         return Doc(self.vocab, words=words)
+
+
+def extract_data(file_path):
+    dataset = list()
+    sentences = list()
+    corpus = conll.read_corpus_conll(file_path)
+
+    for sent in corpus:
+        dataset.append(build_word_data_list(sent))
+
+    for sent_tuples in dataset:
+        if sent_tuples[0][0] == '-DOCSTART-':
+            dataset.remove(sent_tuples)
+
+    for sent_tuples in dataset:
+        sentences.append(build_sentence_string(sent_tuples))
+
+    nlp = spacy.load("en_core_web_sm")
+    # I need this WhitespaceTokenizer otherwise spacy and conll are not in sync
+    nlp.tokenizer = WhitespaceTokenizer(nlp.vocab)
+
+    docs = list()
+    for doc in nlp.pipe(sentences):
+        docs.append(doc)
+
+    ent_tag_converter = dict()
+    ent_tag_converter["PERSON"] = "PER"
+    ent_tag_converter["ORG"] = "ORG"
+    ent_tag_converter["NORP"] = "ORG"
+    ent_tag_converter["FAC"] = "LOC"
+    ent_tag_converter["GPE"] = "LOC"
+    ent_tag_converter["EVENT"] = "MISC"
+    ent_tag_converter["WORK_OF_ART"] = "MISC"
+    ent_tag_converter["LANGUAGE"] = "MISC"
+
+    spacy_data = list()
+    for i in range(len(dataset)):
+        sentence = list()
+        for j in range(dataset[i]):
+            text = docs[i][j].text
+            pos = docs[i][j].pos_
+            chunk = ""  # TO DO
+
+            if docs[i][j].ent_type_ in ent_tag_converter.keys():
+                iob_tag = docs[i][j].ent_iob_ + "-" + ent_tag_converter[docs[i][j].ent_type_]
+            else:
+                iob_tag = "O"
+            sentence.append((text, pos, chunk, iob_tag))
+        spacy_data.append(sentence)
+
+    return
 
 
 def build_word_data_list(corpus_line: tuple):
@@ -57,7 +100,7 @@ def corrected_spacy_tag(converter: dict, spacy_tag: str) -> str:
         return spacy_tag
 
 
-def calculate_accuracy(tag: str, docs: list, dataset: list, spacy_tag_converter=None):
+def calculate_accuracy_pos(tag: str, docs: list, dataset: list, spacy_tag_converter=None):
     accurate_predictions = 0
     total_prediction = 0
     assert len(docs) == len(dataset), \
@@ -74,13 +117,35 @@ def calculate_accuracy(tag: str, docs: list, dataset: list, spacy_tag_converter=
 
             spacy_tag = corrected_spacy_tag(spacy_tag_converter, docs[i][j].tag_)
             total_prediction += 1
-
             accurate_predictions += 1 if true_tag == spacy_tag else 0
-            if true_tag == tag and spacy_tag != true_tag:
-                print(docs[i][j], spacy_tag, true_tag)
+
     accuracy = accurate_predictions / total_prediction if total_prediction > 0 else None
 
     return accuracy, accurate_predictions, total_prediction
+
+
+def evaluate_lists(estimates: list, ground_truths: list) -> (float, int, int, dict):
+    accurate_predictions = 0
+    total_prediction = 0
+    per_tag_accuracies = dict()
+    tags = set([tag for text, tag in ground_truths])
+
+    for tag in tags:
+        tag_acc_pred = 0
+        tag_tot_pred = 0
+        for i in range(len(estimates)):
+            text, tru_tag = ground_truths[i]
+            if tru_tag != tag:
+                continue
+            tag_tot_pred += 1
+            tag_acc_pred += 1 if estimates[i][1] == ground_truths[i][1] else 0
+
+        accurate_predictions += tag_acc_pred
+        total_prediction += tag_tot_pred
+        per_tag_accuracies[tag] = tag_acc_pred / tag_tot_pred if tag_tot_pred > 0 else 0
+
+    accuracy = accurate_predictions / total_prediction if total_prediction > 0 else 0
+    return accuracy, accurate_predictions, total_prediction, per_tag_accuracies
 
 
 def evaluate_spacy_ner(data):
@@ -113,14 +178,38 @@ def evaluate_spacy_ner(data):
     for doc in nlp.pipe(sentences):
         docs.append(doc)
 
-    convert_tag = dict()
-    convert_tag["-LRB-"] = "("
-    convert_tag["-RRB-"] = ")"
-    convert_tag["HYPH"] = ":"
-    convert_tag["``"] = '"'
-    convert_tag["''"] = '"'
+    pos_tag_converter = dict()
+    pos_tag_converter["-LRB-"] = "("
+    pos_tag_converter["-RRB-"] = ")"
+    pos_tag_converter["HYPH"] = ":"
+    pos_tag_converter["``"] = '"'
+    pos_tag_converter["''"] = '"'
     accuracies = dict()
     for tag in pos_label:
-        accuracies[tag] = calculate_accuracy(tag, docs, dataset, convert_tag)
+        accuracies[tag] = calculate_accuracy_pos(tag, docs, dataset, pos_tag_converter)
+
+    ent_tag_converter = dict()
+    ent_tag_converter["PERSON"] = "PER"
+    ent_tag_converter["ORG"] = "ORG"
+    ent_tag_converter["NORP"] = "ORG"
+    ent_tag_converter["FAC"] = "LOC"
+    ent_tag_converter["GPE"] = "LOC"
+    ent_tag_converter["EVENT"] = "MISC"
+    ent_tag_converter["WORK_OF_ART"] = "MISC"
+    ent_tag_converter["LANGUAGE"] = "MISC"
+
+    hyp = list()
+    ref = list()
+    for i in range(len(docs)):
+        for j in range(len(docs[i])):
+            if docs[i][j].ent_type_ in ent_tag_converter.keys():
+                hyp_tag = docs[i][j].ent_iob_ + "-" + ent_tag_converter[docs[i][j].ent_type_]
+            else:
+                hyp_tag = "O"
+
+            hyp.append((docs[i][j].text, hyp_tag))
+            ref.append((dataset[i][j][0], dataset[i][j][3]))
+    a, b, c, d = evaluate_lists(hyp, ref)
+    print(a, d)
 
     return accuracies

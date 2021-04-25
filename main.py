@@ -36,10 +36,12 @@ def first_assignment():
 
 def second_assignment():
     print("---start second assignment---")
+    spacy_estimates, conll_dataset = assignment_module_2.extract_data("data/conll2003/test.txt")
 
 
 if __name__ == '__main__':
-    #first_assignment()
+    # first_assignment()
+
     accuracies = assignment_module_2.evaluate_spacy_ner("data/conll2003/test.txt")
     accurate_predictions = 0
     total_predictions = 0
