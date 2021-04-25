@@ -1,5 +1,6 @@
 import assignment_module_1
 import assignment_module_2
+import conll
 
 
 def first_assignment():
@@ -36,6 +37,7 @@ def first_assignment():
 
 def second_assignment():
     print("************** Start second assignment **************")
+    print("", "")
     docs, spacy_estimates, conll_dataset = assignment_module_2.extract_data("data/conll2003/test.txt")
 
     pos_spacy_list = list()
@@ -63,6 +65,7 @@ def second_assignment():
     for tag in sorted(pos_accuracies.keys()):
         print("Accuracy for tag '{}': {}".format(tag,pos_accuracies[tag]))
 
+    print("", "")
     iob_spacy_list = list()
     iob_conll_list = list()
     for i in range(len(spacy_estimates)):
@@ -81,6 +84,30 @@ def second_assignment():
     print("Accurate predictions: {}. Total attempts {}".format(iob_tot_acc, iob_tot))
     for tag in sorted(iob_accuracies.keys()):
         print("Accuracy for tag '{}': {}".format(tag, iob_accuracies[tag]))
+    print("", "")
+    spacy_list = list()
+    conll_list = list()
+    for i in range(len(spacy_estimates)):
+        conll_temp_list = list()
+        spacy_temp_list = list()
+        for j in range(len(spacy_estimates[i])):
+            spacy_text = spacy_estimates[i][j][0]
+            spacy_iob = spacy_estimates[i][j][3]
+            conll_text = conll_dataset[i][j][0]
+            conll_iob = conll_dataset[i][j][3]
+            spacy_temp_list.append((spacy_text, spacy_iob))
+            conll_temp_list.append((conll_text, conll_iob))
+        spacy_list.append(spacy_temp_list)
+        conll_list.append(conll_temp_list)
+    print("", "")
+    print("Chunk level named entities evaluation")
+    per_chunk_evaluation = conll.evaluate(conll_list, spacy_list)
+    for tag in sorted(per_chunk_evaluation.keys()):
+        print(tag)
+        print("Precision: {}".format(per_chunk_evaluation[tag]["p"]))
+        print("Recall: {}".format(per_chunk_evaluation[tag]["r"]))
+        print("F-measure: {}".format(per_chunk_evaluation[tag]["f"]))
+
 
 if __name__ == '__main__':
     # first_assignment()
