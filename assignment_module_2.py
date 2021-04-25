@@ -12,7 +12,7 @@ class WhitespaceTokenizer:
         return Doc(self.vocab, words=words)
 
 
-def extract_data(file_path):
+def extract_data(file_path: str) -> (list, list, list):
     dataset = list()
     sentences = list()
     corpus = conll.read_corpus_conll(file_path)
@@ -48,9 +48,9 @@ def extract_data(file_path):
     spacy_data = list()
     for i in range(len(dataset)):
         sentence = list()
-        for j in range(dataset[i]):
+        for j in range(len(dataset[i])):
             text = docs[i][j].text
-            pos = docs[i][j].pos_
+            pos = docs[i][j].tag_
             chunk = ""  # TO DO
 
             if docs[i][j].ent_type_ in ent_tag_converter.keys():
@@ -60,7 +60,7 @@ def extract_data(file_path):
             sentence.append((text, pos, chunk, iob_tag))
         spacy_data.append(sentence)
 
-    return
+    return docs, spacy_data, dataset
 
 
 def build_word_data_list(corpus_line: tuple):
@@ -124,7 +124,9 @@ def calculate_accuracy_pos(tag: str, docs: list, dataset: list, spacy_tag_conver
     return accuracy, accurate_predictions, total_prediction
 
 
-def evaluate_lists(estimates: list, ground_truths: list) -> (float, int, int, dict):
+def evaluate_lists(estimates: list, ground_truths: list, *, spacy_to_conll=None, conll_to_spacy=None) -> (float, int, int, dict):
+    assert len(estimates) == len(ground_truths), \
+        "The number of items should be equal. ({}) ({})".format(len(estimates), len(ground_truths))
     accurate_predictions = 0
     total_prediction = 0
     per_tag_accuracies = dict()
@@ -137,8 +139,16 @@ def evaluate_lists(estimates: list, ground_truths: list) -> (float, int, int, di
             text, tru_tag = ground_truths[i]
             if tru_tag != tag:
                 continue
+
             tag_tot_pred += 1
-            tag_acc_pred += 1 if estimates[i][1] == ground_truths[i][1] else 0
+            est_tag = estimates[i][1]
+
+            if spacy_to_conll is not None:
+                est_tag = spacy_to_conll[est_tag] if est_tag in spacy_to_conll.keys() else est_tag
+            if conll_to_spacy is not None:
+                tru_tag = conll_to_spacy[tru_tag] if tru_tag in conll_to_spacy.keys() else tru_tag
+
+            tag_acc_pred += 1 if est_tag == tru_tag else 0
 
         accurate_predictions += tag_acc_pred
         total_prediction += tag_tot_pred

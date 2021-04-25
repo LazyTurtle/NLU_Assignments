@@ -36,19 +36,44 @@ def first_assignment():
 
 def second_assignment():
     print("---start second assignment---")
-    spacy_estimates, conll_dataset = assignment_module_2.extract_data("data/conll2003/test.txt")
+    docs, spacy_estimates, conll_dataset = assignment_module_2.extract_data("data/conll2003/test.txt")
 
+    pos_spacy_list = list()
+    pos_conll_list = list()
+    for i in range(len(spacy_estimates)):
+        for j in range(len(spacy_estimates[i])):
+            spacy_text = spacy_estimates[i][j][0]
+            spacy_pos = spacy_estimates[i][j][1]
+            conll_text = conll_dataset[i][j][0]
+            conll_pos = conll_dataset[i][j][1]
+            pos_spacy_list.append((spacy_text, spacy_pos))
+            pos_conll_list.append((conll_text, conll_pos))
+
+    pos_tag_converter = dict()
+    pos_tag_converter["-LRB-"] = "("
+    pos_tag_converter["-RRB-"] = ")"
+    pos_tag_converter["HYPH"] = ":"
+    pos_tag_converter["``"] = '"'
+    pos_tag_converter["''"] = '"'
+
+    pos_acc, pos_tot_acc, pos_tot, pos_accuracies = assignment_module_2.evaluate_lists(pos_spacy_list, pos_conll_list, spacy_to_conll=pos_tag_converter)
+    print("--------Part of Speech--------")
+    print("Part of speech total accuracy: {}".format(pos_acc))
+    print("Accurate predictions: {}. Total attempts {}".format(pos_tot_acc, pos_tot))
+    for tag in pos_accuracies.keys():
+        print("Accuracy for tag '{}': {}".format(tag,pos_accuracies[tag]))
+    
 
 if __name__ == '__main__':
     # first_assignment()
-
-    accuracies = assignment_module_2.evaluate_spacy_ner("data/conll2003/test.txt")
-    accurate_predictions = 0
-    total_predictions = 0
-    print(accuracies)
-    for key, (fraction, acc, tot) in accuracies.items():
-        if fraction is not None:
-            accurate_predictions += acc
-            total_predictions += tot
-
-    print(accurate_predictions / total_predictions, accurate_predictions, total_predictions)
+    second_assignment()
+    # accuracies = assignment_module_2.evaluate_spacy_ner("data/conll2003/test.txt")
+    # accurate_predictions = 0
+    # total_predictions = 0
+    # print(accuracies)
+    # for key, (fraction, acc, tot) in accuracies.items():
+    #     if fraction is not None:
+    #         accurate_predictions += acc
+    #         total_predictions += tot
+    #
+    # print(accurate_predictions / total_predictions, accurate_predictions, total_predictions)
