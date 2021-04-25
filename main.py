@@ -35,7 +35,7 @@ def first_assignment():
 
 
 def second_assignment():
-    print("---start second assignment---")
+    print("************** Start second assignment **************")
     docs, spacy_estimates, conll_dataset = assignment_module_2.extract_data("data/conll2003/test.txt")
 
     pos_spacy_list = list()
@@ -60,20 +60,28 @@ def second_assignment():
     print("--------Part of Speech--------")
     print("Part of speech total accuracy: {}".format(pos_acc))
     print("Accurate predictions: {}. Total attempts {}".format(pos_tot_acc, pos_tot))
-    for tag in pos_accuracies.keys():
+    for tag in sorted(pos_accuracies.keys()):
         print("Accuracy for tag '{}': {}".format(tag,pos_accuracies[tag]))
-    
+
+    iob_spacy_list = list()
+    iob_conll_list = list()
+    for i in range(len(spacy_estimates)):
+        for j in range(len(spacy_estimates[i])):
+            spacy_text = spacy_estimates[i][j][0]
+            spacy_iob = spacy_estimates[i][j][3]
+            conll_text = conll_dataset[i][j][0]
+            conll_iob = conll_dataset[i][j][3]
+            iob_spacy_list.append((spacy_text, spacy_iob))
+            iob_conll_list.append((conll_text, conll_iob))
+
+    iob_acc, iob_tot_acc, iob_tot, iob_accuracies = assignment_module_2.evaluate_lists(iob_spacy_list, iob_conll_list)
+
+    print("--------Named entities--------")
+    print("Token level named entities total accuracy: {}".format(iob_acc))
+    print("Accurate predictions: {}. Total attempts {}".format(iob_tot_acc, iob_tot))
+    for tag in sorted(iob_accuracies.keys()):
+        print("Accuracy for tag '{}': {}".format(tag, iob_accuracies[tag]))
 
 if __name__ == '__main__':
     # first_assignment()
     second_assignment()
-    # accuracies = assignment_module_2.evaluate_spacy_ner("data/conll2003/test.txt")
-    # accurate_predictions = 0
-    # total_predictions = 0
-    # print(accuracies)
-    # for key, (fraction, acc, tot) in accuracies.items():
-    #     if fraction is not None:
-    #         accurate_predictions += acc
-    #         total_predictions += tot
-    #
-    # print(accurate_predictions / total_predictions, accurate_predictions, total_predictions)
