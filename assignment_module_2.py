@@ -18,7 +18,7 @@ def extract_data(file_path: str) -> (list, list, list):
     corpus = conll.read_corpus_conll(file_path)
 
     for sent in corpus:
-        dataset.append(build_word_data_list(sent))
+        dataset.append(build_tuple_data_list(sent))
 
     for sent_tuples in dataset:
         if sent_tuples[0][0] == '-DOCSTART-':
@@ -63,7 +63,29 @@ def extract_data(file_path: str) -> (list, list, list):
     return docs, spacy_data, dataset
 
 
-def build_word_data_list(corpus_line: tuple):
+def build_simple_data_list(dataset, tag_index):
+    return_list = list()
+    for i in range(len(dataset)):
+        for j in range(len(dataset[i])):
+            text = dataset[i][j][0]
+            tag = dataset[i][j][tag_index]
+            return_list.append((text, tag))
+    return return_list
+
+
+def build_grouped_data_list(dataset, tag_index):
+    return_list = list()
+    for i in range(len(dataset)):
+        group_list = list()
+        for j in range(len(dataset[i])):
+            text = dataset[i][j][0]
+            tag = dataset[i][j][tag_index]
+            group_list.append((text, tag))
+        return_list.append(group_list)
+    return return_list
+
+
+def build_tuple_data_list(corpus_line: tuple):
     word_list = list()
     for word_data_tuple in corpus_line:
         for data in word_data_tuple:
