@@ -63,7 +63,7 @@ def extract_data(file_path: str) -> (list, list, list):
     return docs, spacy_data, dataset
 
 
-def build_simple_data_list(dataset, tag_index):
+def build_simple_data_list(dataset: list, tag_index: int):
     return_list = list()
     for i in range(len(dataset)):
         for j in range(len(dataset[i])):
@@ -73,7 +73,7 @@ def build_simple_data_list(dataset, tag_index):
     return return_list
 
 
-def build_grouped_data_list(dataset, tag_index):
+def build_grouped_data_list(dataset: list, tag_index: int):
     return_list = list()
     for i in range(len(dataset)):
         group_list = list()
@@ -99,7 +99,8 @@ def build_sentence_string(sentence_data_touples: list) -> str:
     return " ".join(words)
 
 
-def evaluate_lists(estimates: list, ground_truths: list, *, spacy_to_conll=None, conll_to_spacy=None) -> (float, int, int, dict):
+def evaluate_lists(estimates: list, ground_truths: list, *, spacy_to_conll=None, conll_to_spacy=None) -> (
+float, int, int, dict):
     assert len(estimates) == len(ground_truths), \
         "The number of items should be equal. ({}) ({})".format(len(estimates), len(ground_truths))
     accurate_predictions = 0
@@ -131,3 +132,16 @@ def evaluate_lists(estimates: list, ground_truths: list, *, spacy_to_conll=None,
 
     accuracy = accurate_predictions / total_prediction if total_prediction > 0 else 0
     return accuracy, accurate_predictions, total_prediction, per_tag_accuracies
+
+
+def group_entities(doc: spacy.tokens.Doc) -> list[list[str]]:
+    entities_combinations = list()
+    for chunk in doc.noun_chunks:
+        ent_combination = list()
+        for ent in chunk.ents:
+            for token in ent:
+                if token.ent_type_ != "":
+                    ent_combination.append(token.ent_type_)
+        if len(ent_combination) > 0:
+            entities_combinations.append(ent_combination)
+    return entities_combinations if len(entities_combinations) > 0 else None

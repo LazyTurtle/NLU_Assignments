@@ -72,8 +72,7 @@ def second_assignment():
 
     spacy_list = assignment_module_2.build_grouped_data_list(spacy_estimates, 3)
     conll_list = assignment_module_2.build_grouped_data_list(conll_dataset, 3)
-    
-    print("", "")
+
     print("Chunk level named entities evaluation")
     per_chunk_evaluation = conll.evaluate(conll_list, spacy_list)
     for tag in sorted(per_chunk_evaluation.keys()):
@@ -81,6 +80,27 @@ def second_assignment():
         print("Precision: {}".format(per_chunk_evaluation[tag]["p"]))
         print("Recall: {}".format(per_chunk_evaluation[tag]["r"]))
         print("F-measure: {}".format(per_chunk_evaluation[tag]["f"]))
+    print("", "")
+
+    combinations = list()
+    frequency = dict()
+    for doc in docs:
+        entities = assignment_module_2.group_entities(doc)
+        if entities is not None:
+            for e in entities:
+                combinations.append(" ".join(e))
+    for combination in set(combinations):
+        frequency[combination] = 0
+    for combination in combinations:
+        frequency[combination] += 1
+    sorted_combination = sorted(frequency, key=frequency.get)
+    sorted_combination.reverse()
+
+    print("Frequency of named entities types")
+    for key in sorted_combination:
+        print("Frequency of combination:", key)
+        print(frequency[key])
+    print("", "")
 
 
 if __name__ == '__main__':
