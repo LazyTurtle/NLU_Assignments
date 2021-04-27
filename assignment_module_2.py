@@ -1,0 +1,168 @@
+import spacy
+from spacy.tokens import Doc
+import conll
+
+
+class WhitespaceTokenizer:
+    def __init__(self, vocab):
+        self.vocab = vocab
+
+    def __call__(self, text):
+        words = text.split(" ")
+        return Doc(self.vocab, words=words)
+
+
+def extract_data(file_path: str) -> (list, list, list):
+    dataset = list()
+    sentences = list()
+    corpus = conll.read_corpus_conll(file_path)
+
+    for sent in corpus:
+        dataset.append(build_tuple_data_list(sent))
+
+    for sent_tuples in dataset:
+        if sent_tuples[0][0] == '-DOCSTART-':
+            dataset.remove(sent_tuples)
+
+    for sent_tuples in dataset:
+        sentences.append(build_sentence_string(sent_tuples))
+
+    nlp = spacy.load("en_core_web_sm")
+    # I need this WhitespaceTokenizer otherwise spacy and conll are not in sync
+    nlp.tokenizer = WhitespaceTokenizer(nlp.vocab)
+
+    docs = list()
+    for doc in nlp.pipe(sentences):
+        docs.append(doc)
+
+    ent_tag_converter = dict()
+    ent_tag_converter["PERSON"] = "PER"
+    ent_tag_converter["ORG"] = "ORG"
+    ent_tag_converter["NORP"] = "ORG"
+    ent_tag_converter["FAC"] = "LOC"
+    ent_tag_converter["GPE"] = "LOC"
+    ent_tag_converter["EVENT"] = "MISC"
+    ent_tag_converter["WORK_OF_ART"] = "MISC"
+    ent_tag_converter["LANGUAGE"] = "MISC"
+
+    spacy_data = list()
+    for i in range(len(dataset)):
+        sentence = list()
+        for j in range(len(dataset[i])):
+            text = docs[i][j].text
+            pos = docs[i][j].tag_
+            chunk = ""  # TO DO
+
+            if docs[i][j].ent_type_ in ent_tag_converter.keys():
+                iob_tag = docs[i][j].ent_iob_ + "-" + ent_tag_converter[docs[i][j].ent_type_]
+            else:
+                iob_tag = "O"
+            sentence.append((text, pos, chunk, iob_tag))
+        spacy_data.append(sentence)
+
+    return docs, spacy_data, dataset
+
+
+def build_simple_data_list(dataset: list, tag_index: int):
+    return_list = list()
+    for i in range(len(dataset)):
+        for j in range(len(dataset[i])):
+            text = dataset[i][j][0]
+            tag = dataset[i][j][tag_index]
+            return_list.append((text, tag))
+    return return_list
+
+
+def build_grouped_data_list(dataset: list, tag_index: int):
+    return_list = list()
+    for i in range(len(dataset)):
+        group_list = list()
+        for j in range(len(dataset[i])):
+            text = dataset[i][j][0]
+            tag = dataset[i][j][tag_index]
+            group_list.append((text, tag))
+        return_list.append(group_list)
+    return return_list
+
+
+def build_tuple_data_list(corpus_line: tuple):
+    word_list = list()
+    for word_data_tuple in corpus_line:
+        for data in word_data_tuple:
+            word, pos_tag, chunk_tag, named_entity = data.split()
+            word_list.append((word, pos_tag, chunk_tag, named_entity))
+    return word_list
+
+
+def build_sentence_string(sentence_data_touples: list) -> str:
+    words = [word for word, pos_tag, chunk_tag, named_entity in sentence_data_touples]
+    return " ".join(words)
+
+
+def evaluate_lists(estimates: list, ground_truths: list, *, spacy_to_conll=None, conll_to_spacy=None) -> (
+        float, int, int, dict):
+    assert len(estimates) == len(ground_truths), \
+        "The number of items should be equal. ({}) ({})".format(len(estimates), len(ground_truths))
+    accurate_predictions = 0
+    total_prediction = 0
+    per_tag_accuracies = dict()
+    tags = set([tag for text, tag in ground_truths])
+
+    for tag in tags:
+        tag_acc_pred = 0
+        tag_tot_pred = 0
+        for i in range(len(estimates)):
+            text, tru_tag = ground_truths[i]
+            if tru_tag != tag:
+                continue
+
+            tag_tot_pred += 1
+            est_tag = estimates[i][1]
+
+            if spacy_to_conll is not None:
+                est_tag = spacy_to_conll[est_tag] if est_tag in spacy_to_conll.keys() else est_tag
+            if conll_to_spacy is not None:
+                tru_tag = conll_to_spacy[tru_tag] if tru_tag in conll_to_spacy.keys() else tru_tag
+
+            tag_acc_pred += 1 if est_tag == tru_tag else 0
+
+        accurate_predictions += tag_acc_pred
+        total_prediction += tag_tot_pred
+        per_tag_accuracies[tag] = tag_acc_pred / tag_tot_pred if tag_tot_pred > 0 else 0
+
+    accuracy = accurate_predictions / total_prediction if total_prediction > 0 else 0
+    return accuracy, accurate_predictions, total_prediction, per_tag_accuracies
+
+
+def group_entities(doc: spacy.tokens.Doc) -> list[list[str]]:
+    entities_combinations = list()
+    for chunk in doc.noun_chunks:
+        ent_combination = list()
+        for ent in chunk.ents:
+            for token in ent:
+                if token.ent_type_ != "":
+                    ent_combination.append(token.ent_type_)
+        if len(ent_combination) > 0:
+            entities_combinations.append(ent_combination)
+    return entities_combinations if len(entities_combinations) > 0 else None
+
+
+def extend_noun_compound(docs: list[spacy.tokens.Doc]) -> list[list[tuple]]:
+    sentences = list()
+    for doc in docs:
+        segments = dict()
+        for token in doc:
+            segments[token.text] = (token.text, "O")
+
+        for entity in doc.ents:
+            segments[entity[0].text] = (entity[0].text, "B-"+entity[0].ent_type_)
+            for i in range(1, len(entity)):
+                segments[entity[i].text] = (entity[i].text, "I-" + entity[0].ent_type_)
+
+        segment_list = list()
+        for token in doc:
+            segment_list.append(segments[token.text])
+
+        sentences.append(segment_list)
+
+    return sentences
