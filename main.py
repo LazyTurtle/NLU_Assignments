@@ -107,5 +107,5 @@ def second_assignment():
 
 
 if __name__ == '__main__':
-    # first_assignment()
+    first_assignment()
     second_assignment()
