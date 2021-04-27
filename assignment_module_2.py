@@ -1,7 +1,5 @@
 import spacy
 from spacy.tokens import Doc
-
-import assignment_module_1
 import conll
 
 
