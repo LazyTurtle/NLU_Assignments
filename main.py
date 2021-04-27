@@ -102,6 +102,9 @@ def second_assignment():
         print(frequency[key])
     print("", "")
 
+    extended_noun_compounds = assignment_module_2.extend_noun_compound(docs)
+    print(extended_noun_compounds)
+
 
 if __name__ == '__main__':
     # first_assignment()

@@ -1,5 +1,7 @@
 import spacy
 from spacy.tokens import Doc
+
+import assignment_module_1
 import conll
 
 
@@ -100,7 +102,7 @@ def build_sentence_string(sentence_data_touples: list) -> str:
 
 
 def evaluate_lists(estimates: list, ground_truths: list, *, spacy_to_conll=None, conll_to_spacy=None) -> (
-float, int, int, dict):
+        float, int, int, dict):
     assert len(estimates) == len(ground_truths), \
         "The number of items should be equal. ({}) ({})".format(len(estimates), len(ground_truths))
     accurate_predictions = 0
@@ -145,3 +147,24 @@ def group_entities(doc: spacy.tokens.Doc) -> list[list[str]]:
         if len(ent_combination) > 0:
             entities_combinations.append(ent_combination)
     return entities_combinations if len(entities_combinations) > 0 else None
+
+
+def extend_noun_compound(docs: list[spacy.tokens.Doc]) -> list[list[tuple]]:
+    sentences = list()
+    for doc in docs:
+        segments = dict()
+        for token in doc:
+            segments[token.text] = (token.text, "O")
+
+        for entity in doc.ents:
+            segments[entity[0].text] = (entity[0].text, "B-"+entity[0].ent_type_)
+            for i in range(1, len(entity)):
+                segments[entity[i].text] = (entity[i].text, "I-" + entity[0].ent_type_)
+
+        segment_list = list()
+        for token in doc:
+            segment_list.append(segments[token.text])
+
+        sentences.append(segment_list)
+
+    return sentences
