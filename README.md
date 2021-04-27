@@ -2,7 +2,7 @@
 
 This brief Python module has example of code used to understand dependency parsers, in this case the one provided by [spaCy](https://spacy.io/)
 
-A description of the main functions can be found in the wiki of this repository, Organized by assignment.
+A description of the main functions can be found in the wiki of this repository, organized by assignment.
 
 ### Requirements
 
